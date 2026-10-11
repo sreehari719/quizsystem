@@ -92,9 +92,14 @@ try {
         }
     );
 
-    token = data.access_token;
-    localStorage.setItem("quizmaster_token", token);
-    await loadDashboard();
+    token = data.access_token || data.token;
+
+if (!token) {
+    throw new Error("Login succeeded, but no token was returned.");
+}
+
+localStorage.setItem("quizmaster_token", token);
+await loadDashboard();
 } catch (error) {
     el("authMessage").textContent = error.message;
 }
