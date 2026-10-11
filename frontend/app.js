@@ -103,6 +103,7 @@ await loadDashboard();
 } catch (error) {
     el("authMessage").textContent = error.message;
 }
+});   
 
 
 async function loadDashboard() {
