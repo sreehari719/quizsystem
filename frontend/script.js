@@ -2,7 +2,7 @@
    QUIZMASTER
    Complete Frontend Quiz Application
 ===================================================== */
-
+const API_BASE_URL = "https://quizsystem-oc27.onrender.com";
 
 /* ================= QUESTION DATABASE ================= */
 
