@@ -59,10 +59,12 @@ function showAuth() {
 el("authForm").addEventListener("submit", async event => {
     event.preventDefault();
 
-    const body = {
-        email: el("email").value.trim(),
-        password: el("password").value
-    };
+   
+const body = {
+    username: el("email").value.trim(),
+    password: el("password").value
+};
+
 
     if (mode === "register") {
         body.username = el("username").value.trim();
