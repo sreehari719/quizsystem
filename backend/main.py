@@ -1,4 +1,5 @@
 import os
+import json
 import sqlite3
 import random
 import secrets
@@ -12,6 +13,84 @@ from jose import jwt, JWTError
 from openai import OpenAI
 
 app = FastAPI(title="QuizMaster API")
+
+def generate_ai_questions(level: int, count: int):
+    api_key = os.getenv("OPENAI_API_KEY")
+
+    if not api_key:
+        raise HTTPException(
+            status_code=503,
+            detail="AI mode is not configured. Add OPENAI_API_KEY in Render."
+        )
+
+    client = OpenAI(api_key=api_key)
+
+    prompt = f"""
+Generate exactly {count} multiple-choice programming quiz questions
+for QuizMaster.
+
+Difficulty level: {level}
+Topics: C, C++, Python, programming fundamentals, data structures,
+algorithms, and debugging.
+
+Return only a JSON object in this format:
+{{
+  "questions": [
+    {{
+      "question": "Question text",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "answer": 0,
+      "explanation": "Short explanation"
+    }}
+  ]
+}}
+
+Rules:
+- Every question must have exactly four distinct options.
+- answer must be an integer from 0 to 3.
+- Questions should be appropriate for difficulty level {level}.
+- Generate exactly {count} questions.
+"""
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You generate accurate programming quiz questions."
+                },
+                {"role": "user", "content": prompt}
+            ],
+            response_format={"type": "json_object"}
+        )
+
+        data = json.loads(response.choices[0].message.content)
+        questions = data["questions"]
+
+        if len(questions) != count:
+            raise ValueError("Incorrect number of generated questions.")
+
+        for question in questions:
+            if (
+                not isinstance(question.get("question"), str)
+                or not isinstance(question.get("options"), list)
+                or len(question["options"]) != 4
+                or not isinstance(question.get("answer"), int)
+                or question["answer"] not in range(4)
+            ):
+                raise ValueError("Invalid question format.")
+
+            question.setdefault("explanation", "")
+
+        return questions
+
+    except Exception as exc:
+        raise HTTPException(
+            status_code=502,
+            detail="AI could not generate the quiz. Please try again."
+        ) from exc
+
 
 SECRET_KEY = os.getenv(
     "SECRET_KEY",
