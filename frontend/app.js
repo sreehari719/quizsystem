@@ -265,23 +265,43 @@ async function finishQuiz() {
         
 
 
+
 async function loadLeaderboard() {
     try {
         const data = await request("/api/leaderboard");
 
-        el("leaderboard").innerHTML = data.leaderboard.length
-            ? data.leaderboard.map(player => `
-                <div class="leader-row">
-                    <strong>#${player.rank} ${escapeText(player.username)}</strong>
-                    <p>Level ${player.level} · ${escapeText(player.title)}</p>
-                    <p>${player.points} points</p>
-                </div>
-            `).join("")
+        const players = Array.isArray(data)
+            ? data
+            : (data.leaderboard || data.players || []);
+
+        el("leaderboard").innerHTML = players.length
+            ? players.map((player, index) => {
+                const rank = player.rank ?? index + 1;
+                const username = player.username ?? player.email ?? "Player";
+                const level = player.highest_level
+                    ?? player.unlocked_level
+                    ?? player.level
+                    ?? 1;
+                const title = player.title ?? player.rank_title ?? "Beginner";
+                const points = player.points
+                    ?? player.total_points
+                    ?? player.score
+                    ?? 0;
+
+                return `
+                    <div class="leader-row">
+                        <strong>#${rank} ${escapeText(username)}</strong>
+                        <p>Level ${escapeText(level)} · ${escapeText(title)}</p>
+                        <p>${escapeText(points)} points</p>
+                    </div>
+                `;
+            }).join("")
             : "<p>No players yet.</p>";
     } catch (error) {
         el("leaderboard").textContent = error.message;
     }
 }
+
 
 function escapeText(value) {
     return String(value).replace(/[&<>"']/g, char => ({
