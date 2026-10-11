@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from passlib.context import CryptContext
 from jose import jwt, JWTError
+from openai import OpenAI
 
 app = FastAPI(title="QuizMaster API")
 
