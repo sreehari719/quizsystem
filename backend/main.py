@@ -397,16 +397,11 @@ def start_quiz(level: int = 1, user=Depends(get_user)):
             403, f"Pass level {highest + 1} first."
         )
 
-    needed = level * 5
+  
+needed = level * 5
 
-    if needed > len(QUESTIONS):
-        raise HTTPException(
-            400,
-            f"Level {level} needs {needed} questions. "
-            "Add more questions to the question bank."
-        )
+questions = generate_ai_questions(level, needed)
 
-    questions = random.sample(QUESTIONS, needed)
     quiz_id = secrets.token_urlsafe(20)
 
     active_quizzes[quiz_id] = {
