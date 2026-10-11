@@ -240,6 +240,7 @@ async function finishQuiz() {
             if (answers[i] === null || answers[i] === undefined) {
                 throw new Error(`Please answer question ${i + 1} first.`);
             }
+        }
 
             await request(`/api/quiz/${quiz.quiz_id}/answer`, {
                 method: "POST",
@@ -249,6 +250,7 @@ async function finishQuiz() {
                 })
             });
         }
+    }
 
         const result = await request(
             `/api/quiz/${quiz.quiz_id}/finish`,
