@@ -1,4 +1,4 @@
-const API = "http://127.0.0.1:8000";
+const API = "https://quizsystem-oc27.onrender.com";
 let token = localStorage.getItem("quizmaster_token") || "";
 let mode = "login";
 let quiz = null;
