@@ -2111,36 +2111,29 @@ function finishQuiz() {
 
 /* ================= SAVE RESULT ================= */
 
-function saveResult(percentage) {
 
+function saveResult(percentage) {
     const users = getUsers();
 
+    if (!users[currentUser]) {
+        users[currentUser] = {
+            history: []
+        };
+    }
+
+    if (!Array.isArray(users[currentUser].history)) {
+        users[currentUser].history = [];
+    }
 
     users[currentUser].history.push({
-
-        topic:
-            getTopicName(currentTopic),
-
-        difficulty:
-            capitalize(currentDifficulty),
-
-        percentage:
-            percentage,
-
-        score:
-            score,
-
-        date:
-            new Date().toLocaleDateString()
-
+        topic: getTopicName(currentTopic),
+        difficulty: capitalize(currentDifficulty),
+        percentage: percentage,
+        score: score,
+        date: new Date().toLocaleDateString()
     });
 
-
-    localStorage.setItem(
-        "quizUsers",
-        JSON.stringify(users)
-    );
-
+    localStorage.setItem("quizUsers", JSON.stringify(users));
 }
 
 
