@@ -229,28 +229,18 @@ function renderQuestion() {
 
 
 
+
 async function finishQuiz() {
     try {
-        if (!quiz || !Array.isArray(quiz.questions) ||
-            !Array.isArray(answers)) {
+        if (!quiz || !Array.isArray(quiz.questions)) {
             throw new Error("Please start a quiz first.");
         }
 
-        if (answers.length !== quiz.questions.length ||
-            answers.some(answer => answer === null || answer === undefined)) {
+        if (
+            answers.length !== quiz.questions.length ||
+            answers.some(answer => answer === null || answer === undefined)
+        ) {
             throw new Error("Please answer every question first.");
-        }
-
-        for (let i = 0; i < answers.length; i++) {
-            await request(`/api/quiz/${quiz.quiz_id}/answer`, {
-                method: "POST",
-                body: JSON.stringify({
-    question_index: i,
-    answer: String(
-        quiz.questions[i].options[answers[i]]
-    )
-})
-            });
         }
 
         const result = await request(
@@ -260,13 +250,17 @@ async function finishQuiz() {
 
         el("resultArea").textContent = JSON.stringify(result, null, 2);
         el("quizMessage").textContent = "Quiz completed successfully!";
+
+        el("quizArea").innerHTML = "";
         await loadDashboard();
+        await loadLeaderboard();
 
     } catch (error) {
         el("quizMessage").textContent =
             error.message || "Unable to finish the quiz.";
     }
 }
+
 
         
 
