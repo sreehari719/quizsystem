@@ -13,6 +13,9 @@ from jose import jwt, JWTError
 from openai import OpenAI
 
 app = FastAPI(title="QuizMaster API")
+@app.get("/")
+def home():
+    return {"message": "QuizMaster API is running"}
 
 def generate_ai_questions(level: int, count: int):
     api_key = os.getenv("OPENAI_API_KEY")
