@@ -46,6 +46,10 @@ function setMode(value) {
     el("authMessage").textContent = "";
 }
 
+el("loginTab").addEventListener("click", () => setMode("login"));
+el("registerTab").addEventListener("click", () => setMode("register"));
+
+
 function showApp() {
     el("authPanel").classList.add("hidden");
     el("appPanel").classList.remove("hidden");
