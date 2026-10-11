@@ -2538,9 +2538,15 @@ async function startBackendQuiz() {
         return;
     }
 
+    const button = document.querySelector(
+        'button[onclick="startBackendQuiz()"]'
+    );
+
     const language = languageElement.value;
     const level = Number(levelElement.value);
     const aiMode = aiElement.value === "true";
+
+    if (button) button.disabled = true;
 
     try {
         const response = await fetch(`${API_BASE_URL}/api/quiz/start`, {
@@ -2559,21 +2565,277 @@ async function startBackendQuiz() {
         const data = await response.json();
 
         if (!response.ok) {
-            alert(data.detail || "Could not start the quiz.");
-            return;
+            throw new Error(data.detail || "Could not start the quiz.");
+        }
+
+        if (!data.questions || data.questions.length === 0) {
+            throw new Error("The backend returned no questions.");
         }
 
         localStorage.setItem("activeQuiz", JSON.stringify(data));
-        console.log("Backend quiz started:", data);
 
-        alert("Quiz started. Next, we need to connect its questions and answers.");
+        window.challengeState = {
+            quiz: data,
+            index: 0,
+            answered: false
+        };
 
+        let panel = document.getElementById("backend-quiz-panel");
+
+        if (!panel) {
+            panel = document.createElement("section");
+            panel.id = "backend-quiz-panel";
+
+            if (button) {
+                button.insertAdjacentElement("afterend", panel);
+            } else {
+                document.body.appendChild(panel);
+            }
+        }
+
+        panel.style.cssText =
+            "margin-top:20px;padding:20px;border-radius:12px;" +
+            "background:#fff;color:#172554;border:1px solid #cbd5e1;";
+
+        panel.scrollIntoView({ behavior: "smooth", block: "start" });
+
+        renderBackendQuestion();
     } catch (error) {
-        console.error("Backend quiz error:", error);
-        alert("Backend connection failed.");
+        console.error("Challenge error:", error);
+        alert(error.message || "Backend connection failed.");
+    } finally {
+        if (button) button.disabled = false;
     }
 }
 
+
+function renderBackendQuestion() {
+    const state = window.challengeState;
+    const panel = document.getElementById("backend-quiz-panel");
+
+    if (!state || !panel) return;
+
+    const questions = state.quiz.questions;
+    const question = questions[state.index];
+
+    state.answered = false;
+    state.selectedAnswer = null;
+
+    panel.replaceChildren();
+
+    const heading = document.createElement("h2");
+    heading.textContent =
+        `${state.quiz.language} — Level ${state.quiz.level}`;
+
+    const progress = document.createElement("p");
+    progress.textContent =
+        `Question ${state.index + 1} of ${questions.length}`;
+
+    const questionText = document.createElement("h3");
+    questionText.textContent = question.question;
+
+    const optionsArea = document.createElement("div");
+    optionsArea.style.cssText =
+        "display:grid;gap:10px;margin:20px 0;";
+
+    question.options.forEach((option, optionIndex) => {
+        const label = document.createElement("label");
+        label.style.cssText =
+            "display:block;padding:12px;border:1px solid #cbd5e1;" +
+            "border-radius:8px;cursor:pointer;";
+
+        const radio = document.createElement("input");
+        radio.type = "radio";
+        radio.name = "backend-answer";
+        radio.value = option;
+        radio.style.marginRight = "10px";
+
+        radio.addEventListener("change", () => {
+            state.selectedAnswer = option;
+        });
+
+        label.appendChild(radio);
+        label.appendChild(document.createTextNode(option));
+        optionsArea.appendChild(label);
+    });
+
+    const feedback = document.createElement("p");
+    feedback.id = "backend-answer-feedback";
+    feedback.setAttribute("aria-live", "polite");
+
+    const actionButton = document.createElement("button");
+    actionButton.type = "button";
+    actionButton.textContent = "Submit Answer";
+    actionButton.style.cssText =
+        "padding:12px 20px;border:0;border-radius:8px;" +
+        "background:#2563eb;color:white;cursor:pointer;";
+
+    actionButton.addEventListener("click", async () => {
+        if (!state.answered) {
+            await submitBackendAnswer();
+        } else if (state.index < questions.length - 1) {
+            state.index++;
+            renderBackendQuestion();
+        } else {
+            await finishBackendQuiz();
+        }
+    });
+
+    panel.append(
+        heading,
+        progress,
+        questionText,
+        optionsArea,
+        feedback,
+        actionButton
+    );
+}
+
+
+async function submitBackendAnswer() {
+    const state = window.challengeState;
+    const panel = document.getElementById("backend-quiz-panel");
+    const feedback = document.getElementById("backend-answer-feedback");
+    const token = localStorage.getItem("accessToken");
+
+    if (!state || !state.selectedAnswer) {
+        alert("Please select an answer first.");
+        return;
+    }
+
+    const button = panel.querySelector("button");
+    button.disabled = true;
+
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/api/quiz/${encodeURIComponent(state.quiz.quiz_id)}/answer`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    question_index: state.index,
+                    answer: state.selectedAnswer
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.detail || "Could not submit answer.");
+        }
+
+        state.answered = true;
+
+        feedback.textContent =
+            (data.correct ? "Correct! " : "Incorrect. ") +
+            (data.explanation || "");
+
+        feedback.style.color = data.correct ? "#15803d" : "#b91c1c";
+
+        panel.querySelectorAll('input[name="backend-answer"]').forEach(
+            input => input.disabled = true
+        );
+
+        button.textContent =
+            state.index < state.quiz.questions.length - 1
+                ? "Next Question"
+                : "Finish Challenge";
+    } catch (error) {
+        console.error("Answer submission error:", error);
+        alert(error.message || "Could not submit your answer.");
+    } finally {
+        button.disabled = false;
+    }
+}
+
+
+async function finishBackendQuiz() {
+    const state = window.challengeState;
+    const panel = document.getElementById("backend-quiz-panel");
+    const token = localStorage.getItem("accessToken");
+
+    if (!state || !panel) return;
+
+    const button = panel.querySelector("button");
+    button.disabled = true;
+    button.textContent = "Calculating result...";
+
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/api/quiz/${encodeURIComponent(state.quiz.quiz_id)}/finish`,
+            {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.detail || "Could not finish the quiz.");
+        }
+
+        localStorage.removeItem("activeQuiz");
+        window.challengeState = null;
+
+        panel.replaceChildren();
+
+        const heading = document.createElement("h2");
+        heading.textContent = "Challenge Completed! 🎉";
+
+        const score = document.createElement("h3");
+        score.textContent =
+            `Score: ${data.score} / ${data.total_questions}`;
+
+        const percentage = document.createElement("p");
+        percentage.textContent = `Percentage: ${data.percentage}%`;
+
+        const earned = document.createElement("p");
+        earned.textContent = `Points earned: ${data.points_earned}`;
+
+        const totalPoints = document.createElement("p");
+        totalPoints.textContent = `Total points: ${data.total_points}`;
+
+        const levels = document.createElement("p");
+        levels.textContent = `Completed levels: ${data.completed_levels}`;
+
+        const restartButton = document.createElement("button");
+        restartButton.type = "button";
+        restartButton.textContent = "Start Another Challenge";
+        restartButton.style.cssText =
+            "padding:12px 20px;border:0;border-radius:8px;" +
+            "background:#2563eb;color:white;cursor:pointer;";
+        restartButton.addEventListener("click", startBackendQuiz);
+
+        panel.append(
+            heading,
+            score,
+            percentage,
+            earned,
+            totalPoints,
+            levels,
+            restartButton
+        );
+
+        if (typeof updateDashboard === "function") {
+            await updateDashboard();
+        }
+
+        await loadLeaderboard();
+        panel.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch (error) {
+        console.error("Finish quiz error:", error);
+        alert(error.message || "Could not finish the quiz.");
+        button.disabled = false;
+        button.textContent = "Finish Challenge";
+    }
+}
 async function loadLeaderboard() {
     const container = document.getElementById("leaderboard-list");
 
