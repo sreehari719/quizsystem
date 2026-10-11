@@ -2,409 +2,65 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0".
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QuizMaster</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
+<header>
+    <h2>⚡ QuizMaster</h2>
+    <span id="userBadge">Guest</span>
+</header>
 
-<!-- ================= LOGIN / REGISTER ================= -->
+<main>
+    <section id="authPanel" class="card">
+        <h1>Welcome to QuizMaster</h1>
+        <p>Create an account or log in to start learning.</p>
 
-<div id="auth-page">
-
-    <div class="auth-card">
-
-        <div class="logo">QuizMaster</div>
-
-        <p class="subtitle">
-            Learn. Challenge. Improve.
-        </p>
-
-        <!-- Login -->
-
-       <div id="login-box">
-
-            <h2>Welcome Back</h2>
-
-            <input
-                type="text"
-                id="login-username"
-                placeholder="Username"
-            >
-
-            <input
-                type="password"
-                id="login-password"
-                placeholder="Password"
-            >
-
-            <button onclick="login()">Login</button>
-
-            <p class="switch">
-                Don't have an account?
-                <span onclick="showRegister()">Register</span>
-            </p>
-
+        <div class="buttons">
+            <button onclick="setMode('login')">Login</button>
+            <button onclick="setMode('register')">Sign up</button>
         </div>
 
+        <form id="authForm">
+            <input id="username" placeholder="Username">
+            <input id="email" type="email" placeholder="Email" required>
+            <input id="password" type="password"
+                   placeholder="Password (8+ characters)"
+                   minlength="8" required>
+            <button id="authSubmit" type="submit">Login</button>
+        </form>
+        <p id="authMessage"></p>
+    </section>
 
-        <!-- Register -->
-
-        <div id="register-box" class="hidden">
-
-            <h2>Create Account</h2>
-
-            <input
-                type="text"
-                id="register-username"
-                placeholder="Choose username"
-            >
-
-            <input
-                type="password"
-                id="register-password"
-                placeholder="Create password"
-            >
-
-            <input
-                type="password"
-                id="confirm-password"
-                placeholder="Confirm password"
-            >
-
-            <button onclick="register()">Register</button>
-
-            <p class="switch">
-                Already have an account?
-                <span onclick="showLogin()">Login</span>
-            </p>
-
-        </div>
-
-    </div>
-
-</div>
-
-
-<!-- ================= DASHBOARD ================= -->
-
-<div id="dashboard-page" class="hidden">
-
-    <nav>
-
-        <div class="nav-logo">
-            QuizMaster
-        </div>
-
-        <div class="nav-right">
-
-            <span id="nav-user"></span>
-
-            <button class="logout-btn" onclick="logout()">
-                Logout
-            </button>
-
-        </div>
-
-    </nav>
-
-
-    <main class="dashboard">
-
-        <section class="welcome">
-
-            <h1>
-                Welcome, <span id="dashboard-user"></span> 👋
-            </h1>
-
-            <p>
-                Choose a topic and test your knowledge.
-            </p>
-
-        </section>
-
-<!-- QUIZMASTER LEVELS, AI MODE AND LEADERBOARD -->
-<section class="quiz-selection">
-    <h2>🚀 Challenge Mode</h2>
-
-    <div class="selection-grid">
-        <div class="selection-box">
-            <label for="language-select">Programming Language</label>
-            <select id="language-select">
-                <option value="Python">Python</option>
-                <option value="C">C</option>
-                <option value="C++">C++</option>
-                <option value="Java">Java</option>
-            </select>
-        </div>
-
-        <div class="selection-box">
-            <label for="level-select">Select Level</label>
-           <select id="level-select"></select>
-
-        <div class="selection-box">
-            <label for="ai-mode">AI Mode</label>
-            <select id="ai-mode">
-                <option value="false">OFF — Standard</option>
-                <option value="true">ON — AI Generated</option>
-            </select>
-        </div>
-    </div>
-
-    <button type="button" onclick="startBackendQuiz()">
-        Start Challenge
-    </button>
-
-    <h2>🏆 Leaderboard</h2>
-    <button type="button" onclick="loadLeaderboard()">
-        Load Rankings
-    </button>
-
-    <div id="leaderboard-list">
-        Rankings will appear here.
-    </div>
-</section>
-
-
-
-        <!-- Statistics -->
-
-        <section class="stats">
-
-            <div class="stat-card">
-                <h3 id="total-quizzes">0</h3>
-                <p>Quizzes Taken</p>
+    <section id="appPanel" class="hidden">
+        <div class="card">
+            <h1>Welcome, <span id="welcomeName"></span>!</h1>
+            <button onclick="logout()">Log out</button>
+            <div class="stats">
+                <div><p>Highest level</p><h2 id="highestLevel">0</h2></div>
+                <div><p>Rank</p><h2 id="rankValue">Silver</h2></div>
             </div>
-
-            <div class="stat-card">
-                <h3 id="best-score">0%</h3>
-                <p>Best Score</p>
-            </div>
-
-            <div class="stat-card">
-                <h3 id="average-score">0%</h3>
-                <p>Average Score</p>
-            </div>
-
-        </section>
-
-
-        
-
-        <!-- History -->
-
-        <section class="history">
-
-            <h2>Recent Quiz History</h2>
-
-            <div id="history-list">
-
-                <p class="empty-history">
-                    No quizzes attempted yet.
-                </p>
-
-            </div>
-
-        </section>
-
-    </main>
-
-</div>
-
-
-<!-- ================= QUIZ PAGE ================= -->
-
-<div id="quiz-page" class="hidden">
-
-    <div class="quiz-container">
-
-        <div class="quiz-top">
-
-            <span id="quiz-topic"></span>
-
-            <div class="timer">
-                ⏱️ <span id="time">60</span>
-            </div>
-
         </div>
 
-
-        <div class="progress-container">
-
-            <div
-                id="progress-bar"
-                class="progress-bar">
-            </div>
-
+        <div class="card">
+            <h2>Start a quiz</h2>
+            <label for="levelSelect">Select level</label>
+            <select id="levelSelect"></select>
+            <button id="startBtn">Start quiz</button>
+            <p id="quizMessage"></p>
+            <div id="quizArea"></div>
+            <div id="resultArea"></div>
         </div>
 
-
-        <div class="question-info">
-
-            <span id="question-number">
-                Question 1 of 10
-            </span>
-
-            <span id="difficulty-label">
-                Easy
-            </span>
-
+        <div class="card">
+            <h2>Leaderboard</h2>
+            <button id="refreshLeaderboard">Refresh</button>
+            <div id="leaderboard"></div>
         </div>
+    </section>
+</main>
 
-
-        <div class="question-card">
-
-            <h2 id="question">
-                Question appears here
-            </h2>
-
-            <div id="options"></div>
-
-        </div>
-
-
-        <button
-            id="next-button"
-            class="next-btn"
-            onclick="nextQuestion()">
-
-            Next Question →
-
-        </button>
-
-    </div>
-
-</div>
-
-
-<!-- ================= EXPLANATION MODAL ================= -->
-
-<div id="explanation-modal" class="modal hidden">
-
-    <div class="modal-card">
-
-        <div class="bot-title">
-            🤖 QuizBot
-        </div>
-
-        <h2 id="bot-result">
-            Let's understand this.
-        </h2>
-
-        <div class="bot-message">
-
-            <p>
-                <strong>Your answer:</strong>
-            </p>
-
-            <p id="user-answer"></p>
-
-            <p>
-                <strong>Correct answer:</strong>
-            </p>
-
-            <p id="correct-answer"></p>
-
-            <p>
-                <strong>Why?</strong>
-            </p>
-
-            <p id="explanation"></p>
-
-        </div>
-
-        <button onclick="closeExplanation()">
-            Continue →
-        </button>
-
-    </div>
-
-</div>
-
-
-<!-- ================= RESULT PAGE ================= -->
-
-<div id="result-page" class="hidden">
-
-    <div class="result-card">
-
-        <div class="trophy">
-            🏆
-        </div>
-
-        <h1>Quiz Completed!</h1>
-
-        <p>
-            Great effort, <span id="result-user"></span>!
-        </p>
-
-
-        <div class="score-circle">
-
-            <span id="final-score">
-                0%
-            </span>
-
-        </div>
-
-
-        <div class="result-stats">
-
-            <div>
-                <strong id="correct-count">
-                    0
-                </strong>
-
-                <span>Correct</span>
-            </div>
-
-            <div>
-                <strong id="wrong-count">
-                    0
-                </strong>
-
-                <span>Wrong</span>
-            </div>
-
-            <div>
-                <strong id="final-total">
-                    10
-                </strong>
-
-                <span>Total</span>
-            </div>
-
-        </div>
-
-
-        <h2 id="result-message">
-            Keep learning!
-        </h2>
-
-
-        <div class="result-buttons">
-
-            <button onclick="retryQuiz()">
-                Try Again
-            </button>
-
-            <button
-                class="secondary-btn"
-                onclick="goDashboard()">
-
-                Dashboard
-
-            </button>
-
-        </div>
-
-    </div>
-
-</div>
-
-
-<script src="script.js"></script>
-
+<script src="app.js"></script>
 </body>
-</html>9
+</html>
