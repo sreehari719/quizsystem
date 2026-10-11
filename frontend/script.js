@@ -2526,3 +2526,97 @@ window.onload = function () {
     }
 
 };
+
+async function startBackendQuiz() {
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+        alert("Please log in first.");
+        return;
+    }
+
+    const languageElement = document.getElementById("language-select");
+    const levelElement = document.getElementById("level-select");
+    const aiElement = document.getElementById("ai-mode");
+
+    if (!languageElement || !levelElement || !aiElement) {
+        alert("Language or level selection is missing. We need to check index.html.");
+        return;
+    }
+
+    const language = languageElement.value;
+    const level = Number(levelElement.value);
+    const aiMode = aiElement.value === "true";
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/quiz/start`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                language: language,
+                level: level,
+                ai_mode: aiMode
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            alert(data.detail || "Could not start the quiz.");
+            return;
+        }
+
+        localStorage.setItem("activeQuiz", JSON.stringify(data));
+        alert("Quiz started successfully!");
+        console.log("Quiz data:", data);
+    } catch (error) {
+        console.error(error);
+        alert("Backend connection failed.");
+    }
+}
+
+async function loadLeaderboard() {
+    const container = document.getElementById("leaderboard-list");
+
+    if (!container) {
+        alert("Leaderboard section is missing in index.html.");
+        return;
+    }
+
+    container.textContent = "Loading rankings...";
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/leaderboard`);
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.detail || "Could not load leaderboard.");
+        }
+
+        const rankings = Array.isArray(data)
+            ? data
+            : (data.leaderboard || data.rankings || []);
+
+        container.replaceChildren();
+
+        if (rankings.length === 0) {
+            container.textContent = "No rankings yet. Complete a quiz first.";
+            return;
+        }
+
+        rankings.forEach((player, index) => {
+            const row = document.createElement("p");
+            row.textContent =
+                `${index + 1}. ${player.username || player.user || "Player"} — ` +
+                `${player.total_points ?? player.points ?? player.score ?? 0} points`;
+            container.appendChild(row);
+        });
+    } catch (error) {
+        console.error(error);
+        container.textContent = error.message;
+    }
+}
+
