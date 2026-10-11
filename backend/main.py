@@ -185,10 +185,9 @@ def get_rank(level):
     tier = ((level - 66) // 5) + 1
     return f"Grand Master {tier}"
 
-@app.get("/")
-def home():
-    return {"message": "QuizMaster backend is running"}
-
+@app.get("/api/health")
+def health():
+    return {"status": "ok"}
 @app.get("/api/health")
 def health():
     return {"status": "ok"}
