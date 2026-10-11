@@ -224,40 +224,57 @@ function renderQuestion() {
     });
 }
 
+```javascript
 async function finishQuiz() {
-    try {
-       
-
-        const result = await request(
-            `/api/quiz/${quiz.quiz_id}/finish`,
-            { method: "POST" }
-        );
-
-        el("quizArea").innerHTML = "";
-        el("resultArea").innerHTML = `
-            <h2>${result.passed ? "🎉 Level passed!" : "Try again!"}</h2>
-            <h1>${result.score} / ${result.total}</h1>
-            <p>Percentage: ${result.percentage}%</p>
-            <p>${escapeText(result.message)}</p>
-            <p>Rank: ${escapeText(result.rank)}</p>
-            <p>Coins earned: ${result.coins_earned}</p>
-            <h3>Review</h3>
-           ${(result.review || []).map(item => `
-                <div class="leader-row">
-                    <strong>${escapeText(item.question)}</strong>
-                    <p>Correct answer: ${escapeText(item.correct_answer)}</p>
-                    <p>${escapeText(item.explanation)}</p>
-                </div>
-            `).join("")}
-            <button onclick="startQuiz()">Try this level again</button>
-        `;
-
-        await loadDashboard();
-    } catch (error) {
-        el("quizMessage").textContent = error.message;
+  try {
+    if (!quiz || !Array.isArray(quiz.questions) || !Array.isArray(answers)) {
+      throw new Error("Please start a quiz first.");
     }
-}
 
+    for (let i = 0; i < answers.length; i++) {
+      if (answers[i] === null || answers[i] === undefined) {
+        throw new Error(`Please answer question ${i + 1} first.`);
+      }
+
+      await request(`/api/quiz/${quiz.quiz_id}/answer`, {
+        method: "POST",
+        body: JSON.stringify({
+          question_index: i,
+          answer_index: answers[i]
+        })
+      });
+    }
+
+    const result = await request(
+      `/api/quiz/${quiz.quiz_id}/finish`,
+      { method: "POST" }
+    );
+
+    el("quizArea").innerHTML = "";
+    el("resultArea").innerHTML = `
+      <h2>${result.passed ? "🎉 Level passed!" : "Try again!"}</h2>
+      <h1>${result.score} / ${result.total}</h1>
+      <p>Percentage: ${result.percentage}%</p>
+      <p>${escapeText(result.message || "")}</p>
+      <p>Rank: ${escapeText(result.rank || "Unranked")}</p>
+      <p>Coins earned: ${result.coins_earned ?? 0}</p>
+      <h3>Review</h3>
+      ${(result.review || []).map(item => `
+        <div class="leader-row">
+          <strong>${escapeText(item.question || "")}</strong>
+          <p>Correct answer: ${escapeText(item.correct_answer || "")}</p>
+          <p>${escapeText(item.explanation || "")}</p>
+        </div>
+      `).join("")}
+      <button onclick="startQuiz()">Try this level again</button>
+    `;
+
+    await loadDashboard();
+  } catch (error) {
+    el("quizMessage").textContent = error.message;
+  }
+}
+```
 async function loadLeaderboard() {
     try {
         const data = await request("/api/leaderboard");
