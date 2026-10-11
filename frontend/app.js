@@ -118,15 +118,23 @@ async function loadDashboard() {
         el("highestLevel").textContent = progress.highest_level;
         el("rankValue").textContent = progress.rank;
 
-        const select = el("levelSelect");
-        select.innerHTML = "";
+       
+const select = el("levelSelect");
+select.innerHTML = "";
 
-        for (let i = 1; i <= progress.unlocked_level; i++) {
-            const option = document.createElement("option");
-            option.value = i;
-            option.textContent = `Level ${i} (${i * 5} questions)`;
-            select.appendChild(option);
-        }
+const unlockedLevel = Math.max(
+    1,
+    Number(progress.unlocked_level || 1)
+);
+
+for (let i = 1; i <= unlockedLevel; i++) {
+    const option = document.createElement("option");
+    option.value = String(i);
+    option.textContent = `Level ${i} (${i * 5} questions)`;
+    select.appendChild(option);
+}
+
+select.value = "1";
 
         showApp();
         await loadLeaderboard();
