@@ -152,10 +152,19 @@ async function startQuiz() {
     el("quizArea").innerHTML = "";
 
     try {
-        quiz = await request(
-            "/api/quiz/start?level=" + el("levelSelect").value,
-            { method: "POST" }
-        );
+        
+quiz = await request(
+    "/api/quiz/start",
+    {
+        method: "POST",
+        body: JSON.stringify({
+            language: "C++",
+            level: Number(el("levelSelect").value),
+            ai_mode: false
+        })
+    }
+);
+
 
         index = 0;
         answers = Array(quiz.questions.length).fill(null);
