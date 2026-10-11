@@ -60,34 +60,34 @@ el("authForm").addEventListener("submit", async event => {
     event.preventDefault();
 
    
+
 const body = {
-    username: el("email").value.trim(),
+    email: el("email").value.trim(),
     password: el("password").value
 };
 
+if (mode === "register") {
+    body.username = el("username").value.trim();
+}
 
-    if (mode === "register") {
-        body.username = el("username").value.trim();
-    }
+try {
+    const data = await request(
+        mode === "login"
+            ? "/api/auth/login"
+            : "/api/auth/register",
+        {
+            method: "POST",
+            body: JSON.stringify(body)
+        }
+    );
 
-    try {
-        const data = await request(
-            mode === "login"
-                ? "/api/auth/login"
-                : "/api/auth/register",
-            {
-                method: "POST",
-                body: JSON.stringify(body)
-            }
-        );
+    token = data.access_token;
+    localStorage.setItem("quizmaster_token", token);
+    await loadDashboard();
+} catch (error) {
+    el("authMessage").textContent = error.message;
+}
 
-        token = data.access_token;
-        localStorage.setItem("quizmaster_token", token);
-        await loadDashboard();
-    } catch (error) {
-        el("authMessage").textContent = error.message;
-    }
-});
 
 async function loadDashboard() {
     try {
