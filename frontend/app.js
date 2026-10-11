@@ -242,7 +242,7 @@ async function finishQuiz() {
             <p>Rank: ${escapeText(result.rank)}</p>
             <p>Coins earned: ${result.coins_earned}</p>
             <h3>Review</h3>
-            ${result.review.map(item => `
+           ${(result.review || []).map(item => `
                 <div class="leader-row">
                     <strong>${escapeText(item.question)}</strong>
                     <p>Correct answer: ${escapeText(item.correct_answer)}</p>
