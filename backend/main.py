@@ -608,45 +608,95 @@ def finish_quiz(quiz_id: str, user=Depends(current_user)):
         questions = json.loads(attempt["questions_json"])
         answers = json.loads(attempt["answers_json"])
 
-        # Unanswered questions receive zero points.
+    
+# Unanswered questions receive zero points.
         score = sum(
             1 for answer in answers.values()
             if answer["correct"]
         )
         total = len(questions)
-        percentage = round(score / total * 100, 2)
+        percentage = round(score / total * 100, 2) if total else 0
 
+        # Save the quiz result.
         db.execute(
             """UPDATE attempts
             SET score = ?, completed = 1
             WHERE id = ? AND user_id = ?""",
-            (score, quiz_id, user["id"])
+            (score, quiz_id, user["id"]),
         )
+
+        language = attempt["language"]
+        level = attempt["level"]
+        passed = percentage >= 75
+
+        # Record a level completion only once.
+        existing = db.execute(
+            """SELECT id FROM level_completions
+            WHERE user_id = ? AND language = ? AND level = ?""",
+            (user["id"], language, level),
+        ).fetchone()
+
+        coins_awarded = 0
+
+        if passed and not existing:
+            coins_awarded = level * 10
+
+            db.execute(
+                """INSERT INTO level_completions
+                (user_id, language, level, score, total_questions,
+                 percentage, coins_awarded, completed_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    user["id"], language, level, score, total,
+                    percentage, coins_awarded,
+                    datetime.now(timezone.utc).isoformat(),
+                ),
+            )
+
+        # Unlock the next level only after passing.
+        highest_unlocked = get_unlocked_level(
+            db, user["id"], language
+        )
+
+        if passed and level >= highest_unlocked:
+            highest_unlocked = level + 1
+            db.execute(
+                """UPDATE language_progress
+                SET highest_unlocked = ?
+                WHERE user_id = ? AND language = ?""",
+                (highest_unlocked, user["id"], language),
+            )
 
         user_stats = db.execute(
             """SELECT COALESCE(SUM(score), 0) AS points
             FROM attempts
             WHERE user_id = ? AND completed = 1""",
-            (user["id"],)
+            (user["id"],),
         ).fetchone()
 
         completed_levels = db.execute(
-            """SELECT COUNT(DISTINCT language || ':' || level)
-            AS total FROM attempts
-            WHERE user_id = ? AND completed = 1""",
-            (user["id"],)
+            """SELECT COUNT(*) AS total
+            FROM level_completions WHERE user_id = ?""",
+            (user["id"],),
         ).fetchone()["total"]
 
-    return {
-        "quiz_id": quiz_id,
-        "score": score,
-        "total_questions": total,
-        "percentage": percentage,
-        "points_earned": score,
-        "total_points": user_stats["points"],
-        "completed_levels": completed_levels,
-    }
+        total_coins = get_total_coins(db, user["id"])
+        rank = get_overall_rank(db, user["id"])
 
+        return {
+            "quiz_id": quiz_id,
+            "score": score,
+            "total_questions": total,
+            "percentage": percentage,
+            "passed": passed,
+            "next_level_unlocked": highest_unlocked,
+            "coins_awarded": coins_awarded,
+            "total_coins": total_coins,
+            "rank": rank,
+            "points_earned": score,
+            "total_points": user_stats["points"],
+            "completed_levels": completed_levels,
+        }
 
 @app.get("/api/leaderboard")
 def leaderboard(language: str | None = None, limit: int = 10):
