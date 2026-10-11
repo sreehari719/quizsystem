@@ -41,7 +41,8 @@ if (!response.ok) {
 function setMode(value) {
     mode = value;
 
-    el("username").classList.toggle("hidden", mode === "login");
+    el("authSubmit").textContent =
+    mode === "register" ? "Create account" : "Login";
     el("username").required = mode === "register";
 
     const button = el("authSubmit");
