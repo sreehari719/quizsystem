@@ -182,12 +182,14 @@ quiz = await request(
     }
 }
 
+
 function renderQuestion() {
     const q = quiz.questions[index];
     const area = el("quizArea");
+    const total = quiz.questions.length;
 
     area.innerHTML = `
-        <h3>Question ${index + 1} of ${quiz.total}</h3>
+        <h3>Question ${index + 1} of ${total}</h3>
         <h2>${escapeText(q.question)}</h2>
         ${q.options.map((option, i) => `
             <label class="option">
@@ -198,24 +200,25 @@ function renderQuestion() {
             </label>
         `).join("")}
         <button id="nextQuestion">
-            ${index === quiz.total - 1 ? "Finish quiz" : "Next"}
+            ${index === total - 1 ? "Finish quiz" : "Next"}
         </button>
     `;
 
     area.querySelectorAll('input[name="answer"]').forEach(input => {
         input.addEventListener("change", () => {
             answers[index] = Number(input.value);
+            el("quizMessage").textContent = "";
         });
     });
 
     el("nextQuestion").addEventListener("click", async () => {
-        if (answers[index] === null) {
+        if (answers[index] === null || answers[index] === undefined) {
             el("quizMessage").textContent =
                 "Please choose an answer first.";
             return;
         }
 
-        if (index < quiz.total - 1) {
+        if (index < total - 1) {
             index++;
             renderQuestion();
         } else {
