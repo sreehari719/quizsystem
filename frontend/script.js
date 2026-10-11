@@ -2519,7 +2519,36 @@ window.onload = function () {
     }
 
 };
+function setupChallengeLevels() {
+    const levelSelect = document.getElementById("level-select");
+    const countDisplay = document.getElementById("challenge-question-count");
 
+    if (!levelSelect || levelSelect.dataset.initialized === "true") return;
+
+    for (let level = 1; level <= 100; level++) {
+        const option = document.createElement("option");
+        option.value = String(level);
+        option.textContent = `Level ${level} — ${level * 5} Questions`;
+        levelSelect.appendChild(option);
+    }
+
+    levelSelect.dataset.initialized = "true";
+
+    function updateCount() {
+        if (countDisplay) {
+            countDisplay.textContent = Number(levelSelect.value) * 5;
+        }
+    }
+
+    levelSelect.addEventListener("change", updateCount);
+    updateCount();
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupChallengeLevels);
+} else {
+    setupChallengeLevels();
+}
 
 async function startBackendQuiz() {
     const token = localStorage.getItem("accessToken");
