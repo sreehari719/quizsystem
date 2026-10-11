@@ -228,20 +228,17 @@ function renderQuestion() {
 
 async function finishQuiz() {
     try {
-        if (!quiz || !Array.isArray(quiz.questions) || !Array.isArray(answers)) {
+        if (!quiz || !Array.isArray(quiz.questions) ||
+            !Array.isArray(answers)) {
             throw new Error("Please start a quiz first.");
         }
 
-        if (answers.length !== quiz.questions.length) {
+        if (answers.length !== quiz.questions.length ||
+            answers.some(answer => answer === null || answer === undefined)) {
             throw new Error("Please answer every question first.");
         }
 
         for (let i = 0; i < answers.length; i++) {
-            if (answers[i] === null || answers[i] === undefined) {
-                throw new Error(`Please answer question ${i + 1} first.`);
-            }
-        }
-
             await request(`/api/quiz/${quiz.quiz_id}/answer`, {
                 method: "POST",
                 body: JSON.stringify({
@@ -250,7 +247,21 @@ async function finishQuiz() {
                 })
             });
         }
+
+        const result = await request(
+            `/api/quiz/${quiz.quiz_id}/finish`,
+            { method: "POST" }
+        );
+
+        el("resultArea").textContent = JSON.stringify(result, null, 2);
+        el("quizMessage").textContent = "Quiz completed successfully!";
+        await loadDashboard();
+
+    } catch (error) {
+        el("quizMessage").textContent =
+            error.message || "Unable to finish the quiz.";
     }
+}
 
         const result = await request(
             `/api/quiz/${quiz.quiz_id}/finish`,
