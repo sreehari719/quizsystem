@@ -23,7 +23,7 @@
 
         <!-- Login -->
 
-        <div id="login-box">
+        <div login-box">
 
             <h2>Welcome Back</h2>
 
@@ -123,6 +123,56 @@
             </p>
 
         </section>
+
+<!-- QUIZMASTER LEVELS, AI MODE AND LEADERBOARD -->
+<section class="quiz-selection">
+    <h2>🚀 Challenge Mode</h2>
+
+    <div class="selection-grid">
+        <div class="selection-box">
+            <label for="language-select">Programming Language</label>
+            <select id="language-select">
+                <option value="Python">Python</option>
+                <option value="C">C</option>
+                <option value="C++">C++</option>
+                <option value="Java">Java</option>
+            </select>
+        </div>
+
+        <div class="selection-box">
+            <label for="level-select">Select Level</label>
+            <select id="level-select">
+                <option value="1">Level 1 — 5 questions</option>
+                <option value="2">Level 2 — 10 questions</option>
+                <option value="3">Level 3 — 15 questions</option>
+                <option value="4">Level 4 — 20 questions</option>
+                <option value="5">Level 5 — 25 questions</option>
+            </select>
+        </div>
+
+        <div class="selection-box">
+            <label for="ai-mode">AI Mode</label>
+            <select id="ai-mode">
+                <option value="false">OFF — Standard</option>
+                <option value="true">ON — AI Generated</option>
+            </select>
+        </div>
+    </div>
+
+    <button type="button" onclick="startBackendQuiz()">
+        Start Challenge
+    </button>
+
+    <h2>🏆 Leaderboard</h2>
+    <button type="button" onclick="loadLeaderboard()">
+        Load Rankings
+    </button>
+
+    <div id="leaderboard-list">
+        Rankings will appear here.
+    </div>
+</section>
+
 
 
         <!-- Statistics -->
