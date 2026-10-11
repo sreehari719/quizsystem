@@ -37,14 +37,23 @@ if (!response.ok) {
     return data;
 }
 
+
 function setMode(value) {
     mode = value;
-    el("username").classList.toggle("hidden", mode === "login");
-    el("username").required = mode === "register";
-    el("authSubmit").textContent =
+
+    const username = el("username");
+    const submit = el("authSubmit");
+    const message = el("authMessage");
+
+    username.classList.toggle("hidden", mode === "login");
+    username.required = mode === "register";
+
+    submit.textContent =
         mode === "login" ? "Login" : "Create account";
-    el("authMessage").textContent = "";
+
+    message.textContent = "";
 }
+
 window.setMode = setMode;
 
 
