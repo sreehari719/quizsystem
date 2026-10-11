@@ -1385,69 +1385,58 @@ function getUsers() {
 }
 
 
-function register() {
 
-    const username =
-        document.getElementById("register-username").value.trim();
+async function register() {
+    const username = document.getElementById("register-username").value.trim();
+    const password = document.getElementById("register-password").value;
+    const confirmPassword = document.getElementById("confirm-password").value;
 
-    const password =
-        document.getElementById("register-password").value;
-
-    const confirmPassword =
-        document.getElementById("confirm-password").value;
-
-
-    if (!username || !password) {
-
+    if (!username || !password || !confirmPassword) {
         alert("Please fill all fields.");
-
         return;
-
     }
 
+    if (username.length < 3 || username.length > 30) {
+        alert("Username must contain 3–30 characters.");
+        return;
+    }
+
+    if (password.length < 8 || password.length > 128) {
+        alert("Password must contain 8–128 characters.");
+        return;
+    }
 
     if (password !== confirmPassword) {
-
         alert("Passwords do not match.");
-
         return;
-
     }
 
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({ username, password })
+        });
 
-    const users = getUsers();
+        const data = await response.json();
 
+        if (!response.ok) {
+            alert(data.detail || "Registration failed.");
+            return;
+        }
 
-    if (users[username]) {
-
-        alert("Username already exists.");
-
-        return;
-
+        alert("Registration successful! Please log in.");
+        document.getElementById("login-username").value = username;
+        document.getElementById("login-password").value = "";
+        showLogin();
+    } catch (error) {
+        console.error("Registration error:", error);
+        alert("Unable to connect to the server. Please try again.");
     }
-
-
-    users[username] = {
-
-        password: password,
-
-        history: []
-
-    };
-
-
-    localStorage.setItem(
-        "quizUsers",
-        JSON.stringify(users)
-    );
-
-
-    alert("Registration successful!");
-
-    showLogin();
-
 }
-
 
 async function login() {
     const username = document
