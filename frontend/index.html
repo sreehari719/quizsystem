@@ -17,11 +17,8 @@
         <h1>Welcome to QuizMaster</h1>
         <p>Create an account or log in to start learning.</p>
 
-        <div class="buttons">
-            <button onclick="setMode('login')">Login</button>
-            <button onclick="setMode('register')">Sign up</button>
-        </div>
-
+        <button type="button" onclick="window.setMode('login')">Login</button>
+<button type="button" onclick="window.setMode('register')">Sign up</button>
         <form id="authForm">
             <input id="username" placeholder="Username">
             <input id="email" type="email" placeholder="Email" required>
