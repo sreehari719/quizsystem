@@ -30,6 +30,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
     "https://quizsystem-frontend.vercel.app",
+    "https://quizsystem-frontend-ou7zlk2l9-online-quizz.vercel.app",
     "https://quizsystem-frontend-dnzl2dc42-online-quizz.vercel.app",
     "http://localhost:5500",
     "http://127.0.0.1:5500",
