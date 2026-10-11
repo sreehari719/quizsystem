@@ -286,7 +286,7 @@ el("refreshLeaderboard").addEventListener("click", loadLeaderboard);
     setMode("login");
 
     try {
-        const response = await fetch(API + "/api/health");
+        const response = await fetch(API + "/");
         if (!response.ok) throw new Error();
         if (token) await loadDashboard();
         else showAuth();
