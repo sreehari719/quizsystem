@@ -1568,56 +1568,95 @@ function showDashboard() {
 }
 
 
-function updateDashboard() {
 
-    const users = getUsers();
+async function updateDashboard() {
+    const token = localStorage.getItem("accessToken");
 
-    const user = users[currentUser];
-
-    const history = user.history || [];
-
-
-    document.getElementById("total-quizzes")
-        .textContent = history.length;
-
-
-    if (history.length === 0) {
-
-        document.getElementById("best-score")
-            .textContent = "0%";
-
-        document.getElementById("average-score")
-            .textContent = "0%";
-
-    } else {
-
-        const scores =
-            history.map(item => item.percentage);
-
-        const best =
-            Math.max(...scores);
-
-        const average =
-            Math.round(
-                scores.reduce(
-                    (a, b) => a + b,
-                    0
-                ) / scores.length
-            );
-
-
-        document.getElementById("best-score")
-            .textContent = best + "%";
-
-        document.getElementById("average-score")
-            .textContent = average + "%";
-
+    if (!token) {
+        alert("Please log in again.");
+        logout();
+        return;
     }
 
+    const headers = {
+        "Accept": "application/json",
+        "Authorization": `Bearer ${token}`
+    };
 
-    displayHistory(history);
+    try {
+        const [meResponse, progressResponse] = await Promise.all([
+            fetch(`${API_BASE_URL}/api/me`, { headers }),
+            fetch(`${API_BASE_URL}/api/progress`, { headers })
+        ]);
 
+        const me = await meResponse.json();
+        const progressData = await progressResponse.json();
+
+        if (!meResponse.ok) {
+            throw new Error(me.detail || "Unable to load profile.");
+        }
+
+        if (!progressResponse.ok) {
+            throw new Error(
+                progressData.detail || "Unable to load progress."
+            );
+        }
+
+        document.getElementById("total-quizzes").textContent =
+            me.completed_quizzes ?? 0;
+
+        document.getElementById("best-score").textContent =
+            `${me.best_score ?? 0} pts`;
+
+        const completed = me.completed_quizzes ?? 0;
+        const points = me.total_points ?? 0;
+
+        document.getElementById("average-score").textContent =
+            completed ? `${Math.round(points / completed)} pts` : "0 pts";
+
+        const container = document.getElementById("history-list");
+        container.replaceChildren();
+
+        const progress = progressData.progress || [];
+
+        if (progress.length === 0) {
+            const message = document.createElement("p");
+            message.className = "empty-history";
+            message.textContent = "No completed levels yet.";
+            container.appendChild(message);
+            return;
+        }
+
+        progress.forEach(item => {
+            const row = document.createElement("div");
+            row.className = "history-item";
+
+            const details = document.createElement("div");
+            const title = document.createElement("strong");
+            title.textContent = item.language;
+
+            const level = document.createElement("small");
+            level.textContent =
+                `Level ${item.level} · ${item.attempts} attempt(s)`;
+
+            details.append(title, level);
+
+            const result = document.createElement("div");
+            result.className = "history-score";
+            result.textContent = `${item.best_score ?? 0} pts`;
+
+            row.append(details, result);
+            container.appendChild(row);
+        });
+
+    } catch (error) {
+        console.error("Dashboard error:", error);
+
+        document.getElementById("history-list").textContent =
+            "Unable to load your progress. Please refresh and try again.";
+    }
 }
+
 
 
 function displayHistory(history) {
