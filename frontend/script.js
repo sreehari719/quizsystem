@@ -2520,6 +2520,7 @@ window.onload = function () {
 
 };
 
+
 async function startBackendQuiz() {
     const token = localStorage.getItem("accessToken");
 
@@ -2533,7 +2534,7 @@ async function startBackendQuiz() {
     const aiElement = document.getElementById("ai-mode");
 
     if (!languageElement || !levelElement || !aiElement) {
-        alert("Language or level selection is missing. We need to check index.html.");
+        alert("Language, level, or AI Mode selection is missing.");
         return;
     }
 
@@ -2563,10 +2564,12 @@ async function startBackendQuiz() {
         }
 
         localStorage.setItem("activeQuiz", JSON.stringify(data));
-        alert("Quiz started successfully!");
-        console.log("Quiz data:", data);
+        console.log("Backend quiz started:", data);
+
+        alert("Quiz started. Next, we need to connect its questions and answers.");
+
     } catch (error) {
-        console.error(error);
+        console.error("Backend quiz error:", error);
         alert("Backend connection failed.");
     }
 }
