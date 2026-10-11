@@ -115,12 +115,18 @@ async function loadDashboard() {
 
         el("welcomeName").textContent = user.username;
         el("userBadge").textContent = user.email;
-       el("highestLevel").textContent =
-    progress.highest_level ?? progress.completed_levels ?? 0;
+      const progressItems = Array.isArray(progress.progress)
+    ? progress.progress
+    : [];
 
-el("rankValue").textContent =
-    progress.rank ?? "Unranked";
+const highestLevel = progressItems.reduce(
+    (highest, item) => Math.max(highest, Number(item.level) || 0),
+    0
+);
 
+el("highestLevel").textContent = highestLevel;
+
+el("rankValue").textContent = "View leaderboard";
        
 const select = el("levelSelect");
 select.innerHTML = "";
