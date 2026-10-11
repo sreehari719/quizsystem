@@ -115,8 +115,11 @@ async function loadDashboard() {
 
         el("welcomeName").textContent = user.username;
         el("userBadge").textContent = user.email;
-        el("highestLevel").textContent = progress.highest_level;
-        el("rankValue").textContent = progress.rank;
+       el("highestLevel").textContent =
+    progress.highest_level ?? progress.completed_levels ?? 0;
+
+el("rankValue").textContent =
+    progress.rank ?? "Unranked";
 
        
 const select = el("levelSelect");
