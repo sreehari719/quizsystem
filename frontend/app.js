@@ -315,7 +315,7 @@ async function loadLeaderboard() {
                 return `
                     <div class="leader-row">
                         <strong>#${rank} ${escapeText(username)}</strong>
-                     <p>Completed levels: ${escapeText(player.completed_levels ?? player.level ?? 0)}</p>
+                    <p>Completed quizzes: ${escapeText(player.completed_quizzes ?? 0)}</p>
                     </div>
                 `;
             }).join("")
