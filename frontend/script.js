@@ -1449,40 +1449,61 @@ function register() {
 }
 
 
-function login() {
+async function login() {
+    const username = document
+        .getElementById("login-username").value.trim();
 
-    const username =
-        document.getElementById("login-username").value.trim();
+    const password = document
+        .getElementById("login-password").value;
 
-    const password =
-        document.getElementById("login-password").value;
+    if (!username || !password) {
+        alert("Please enter your username and password.");
+        return;
+    }
 
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/api/auth/login`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            }
+        );
 
-    const users = getUsers();
+        const data = await response.json();
 
+        if (!response.ok) {
+            alert(data.detail || "Login failed. Check your credentials.");
+            return;
+        }
 
-    if (
-        users[username] &&
-        users[username].password === password
-    ) {
+        if (!data.token) {
+            alert("Login response did not contain an access token.");
+            return;
+        }
 
-        currentUser = username;
-
+        localStorage.setItem("accessToken", data.token);
         localStorage.setItem(
             "loggedInUser",
-            username
+            data.user.username
         );
+
+        currentUser = data.user.username;
 
         showDashboard();
 
-    } else {
-
-        alert("Invalid username or password.");
-
+    } catch (error) {
+        console.error("Login error:", error);
+        alert("Unable to connect to the server. Please try again.");
     }
-
 }
-
 
 function logout() {
 
