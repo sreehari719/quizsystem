@@ -226,20 +226,7 @@ function renderQuestion() {
 
 async function finishQuiz() {
     try {
-        for (let i = 0; i < answers.length; i++) {
-            await request(
-                `/api/quiz/${quiz.quiz_id}/answer`,
-                {
-                    method: "POST",
-                  body: JSON.stringify({
-    question_index: i,
-    answer: String(
-        quiz.questions[i].options[answers[i]]
-    )
-})
-                }
-            );
-        }
+       
 
         const result = await request(
             `/api/quiz/${quiz.quiz_id}/finish`,
