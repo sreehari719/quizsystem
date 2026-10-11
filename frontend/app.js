@@ -291,8 +291,8 @@ async function loadLeaderboard() {
                 return `
                     <div class="leader-row">
                         <strong>#${rank} ${escapeText(username)}</strong>
-                        <p>Level ${escapeText(level)} · ${escapeText(title)}</p>
-                        <p>${escapeText(points)} points</p>
+                       <p>Completed levels: ${escapeText(player.completed_levels ?? 0)}</p>
+<p>${escapeText(player.points ?? 0)} points · Best score: ${escapeText(player.best_score ?? 0)}</p>
                     </div>
                 `;
             }).join("")
