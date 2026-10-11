@@ -25,11 +25,14 @@ OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1-mini")
 if not SECRET_KEY:
     raise RuntimeError("Set SECRET_KEY in your .env file.")
 
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv(
-        "FRONTEND_ORIGIN", "http://localhost:5500"
-    ).split(","),
+    allow_origins=[
+        "https://quizsystem-frontend.vercel.app",
+        "http://localhost:5500",
+        "http://127.0.0.1:5500",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
