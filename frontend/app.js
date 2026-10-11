@@ -263,17 +263,8 @@ async function finishQuiz() {
     }
 }
 
-        const result = await request(
-            `/api/quiz/${quiz.quiz_id}/finish`,
-            { method: "POST" }
-        );
+        
 
-        el("resultArea").textContent = JSON.stringify(result, null, 2);
-        el("quizMessage").textContent = "Quiz completed successfully!";
-    } catch (error) {
-        el("quizMessage").textContent = error.message || "Unable to finish the quiz.";
-    }
-}
 
 async function loadLeaderboard() {
     try {
