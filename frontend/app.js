@@ -146,12 +146,10 @@ try {
 const select = el("levelSelect");
 select.innerHTML = "";
 
-const unlockedLevel = Math.max(
-    1,
-    Number(progress.unlocked_level || 1)
-);
 
-for (let i = 1; i <= unlockedLevel; i++) {
+const maxLevel = 100;
+
+for (let i = 1; i <= maxLevel; i++) {
     const option = document.createElement("option");
     option.value = String(i);
     option.textContent = `Level ${i} (${i * 5} questions)`;
@@ -159,6 +157,7 @@ for (let i = 1; i <= unlockedLevel; i++) {
 }
 
 select.value = "1";
+
 
         showApp();
         await loadLeaderboard();
