@@ -126,7 +126,22 @@ const highestLevel = progressItems.reduce(
 
 el("highestLevel").textContent = highestLevel;
 
-el("rankValue").textContent = "View leaderboard";
+try {
+    const leaderboardData = await request("/api/leaderboard");
+    const players = Array.isArray(leaderboardData)
+        ? leaderboardData
+        : (leaderboardData.leaderboard || leaderboardData.players || []);
+
+    const currentPlayer = players.find(
+        player => player.username === user.username
+    );
+
+    el("rankValue").textContent = currentPlayer
+        ? `#${currentPlayer.rank}`
+        : "Unranked";
+} catch {
+    el("rankValue").textContent = "Unranked";
+}
        
 const select = el("levelSelect");
 select.innerHTML = "";
