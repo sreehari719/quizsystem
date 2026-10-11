@@ -29,10 +29,11 @@ if not SECRET_KEY:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://quizsystem-frontend.vercel.app",
-        "http://localhost:5500",
-        "http://127.0.0.1:5500",
-    ],
+    "https://quizsystem-frontend.vercel.app",
+    "https://quizsystem-frontend-dnzl2dc42-online-quizz.vercel.app",
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
