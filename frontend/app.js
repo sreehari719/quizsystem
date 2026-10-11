@@ -245,9 +245,11 @@ async function finishQuiz() {
             await request(`/api/quiz/${quiz.quiz_id}/answer`, {
                 method: "POST",
                 body: JSON.stringify({
-                    question_index: i,
-                    answer_index: answers[i]
-                })
+    question_index: i,
+    answer: String(
+        quiz.questions[i].options[answers[i]]
+    )
+})
             });
         }
 
