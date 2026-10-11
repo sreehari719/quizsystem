@@ -228,13 +228,13 @@ function renderQuestion() {
 async function finishQuiz() {
   try {
     if (!quiz || !Array.isArray(quiz.questions) || !Array.isArray(answers)) {
-      throw new Error("Please start a quiz first.");
-    }
+    throw new Error("Please start a quiz first.");
+}
 
     for (let i = 0; i < answers.length; i++) {
-      if (answers[i] === null || answers[i] === undefined) {
-        throw new Error(`Please answer question ${i + 1} first.`);
-      }
+     if (answers[i] === null || answers[i] === undefined) {
+    throw new Error(`Please answer question ${i + 1} first.`);
+}
 
       await request(`/api/quiz/${quiz.quiz_id}/answer`, {
         method: "POST",
