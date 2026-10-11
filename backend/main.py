@@ -398,7 +398,7 @@ def start_quiz(level: int = 1, user=Depends(get_user)):
         )
 
   
-needed = level * 5
+needed = 5
 
 questions = generate_ai_questions(level, needed)
 
