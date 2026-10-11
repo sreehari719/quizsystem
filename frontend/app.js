@@ -231,10 +231,10 @@ async function finishQuiz() {
                 `/api/quiz/${quiz.quiz_id}/answer`,
                 {
                     method: "POST",
-                    body: JSON.stringify({
-                        question_index: i,
-                        answer_index: answers[i]
-                    })
+                   body: JSON.stringify({
+    question_index: i,
+    answer: answers[i]
+})
                 }
             );
         }
