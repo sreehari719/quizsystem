@@ -45,9 +45,7 @@ function setMode(value) {
         mode === "login" ? "Login" : "Create account";
     el("authMessage").textContent = "";
 }
-
-el("loginTab").addEventListener("click", () => setMode("login"));
-el("registerTab").addEventListener("click", () => setMode("register"));
+window.setMode = setMode;
 
 
 function showApp() {
