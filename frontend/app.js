@@ -41,17 +41,19 @@ if (!response.ok) {
 function setMode(value) {
     mode = value;
 
-    el("authSubmit").textContent =
-    mode === "register" ? "Create account" : "Login";
-    el("username").required = mode === "register";
-
+    const username = el("username");
     const button = el("authSubmit");
-    button.textContent = mode === "register"
-        ? "Create account"
-        : "Login";
+    const message = el("authMessage");
 
-    el("authMessage").textContent = "";
+    username.classList.toggle("hidden", mode !== "register");
+    username.required = mode === "register";
+
+    button.textContent =
+        mode === "register" ? "Create account" : "Login";
+
+    message.textContent = "";
 }
+
 window.setMode = setMode;
 
 
