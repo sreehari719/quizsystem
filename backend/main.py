@@ -42,7 +42,58 @@ LANGUAGES = [
     "C", "C++", "Java", "Python",
     "JavaScript", "SQL", "HTML", "CSS"
 ]
+def get_rank(level: int) -> str:
+    if level <= 5:
+        return "Silver"
+    if level <= 15:
+        return "Gold"
+    if level <= 35:
+        return "Diamond"
+    if level <= 50:
+        return "Platinum"
+    if level <= 65:
+        return "Master"
 
+    tier = ((level - 66) // 5) + 1
+    return f"Grand Master {tier}"
+    def get_unlocked_level(db, user_id: int, language: str) -> int:
+    db.execute(
+        """INSERT OR IGNORE INTO language_progress
+        (user_id, language, highest_unlocked)
+        VALUES (?, ?, 1)""",
+        (user_id, language),
+    )
+
+    row = db.execute(
+        """SELECT highest_unlocked
+        FROM language_progress
+        WHERE user_id = ? AND language = ?""",
+        (user_id, language),
+    ).fetchone()
+
+    return row["highest_unlocked"]
+
+
+    def get_total_coins(db, user_id: int) -> int:
+    row = db.execute(
+        """SELECT COALESCE(SUM(coins_awarded), 0) AS coins
+        FROM level_completions
+        WHERE user_id = ?""",
+        (user_id,),
+    ).fetchone()
+
+    return row["coins"]
+
+
+    def get_overall_rank(db, user_id: int) -> str:
+    row = db.execute(
+        """SELECT COALESCE(MAX(highest_unlocked), 1) AS level
+        FROM language_progress
+        WHERE user_id = ?""",
+        (user_id,),
+    ).fetchone()
+
+    return get_rank(row["level"])
 # Starter question bank. Add more questions as your app grows.
 QUESTION_BANK = [
     {
@@ -146,7 +197,29 @@ def init_db():
 
         CREATE INDEX IF NOT EXISTS idx_attempts_leaderboard
         ON attempts(completed, score);
-        """)
+        
+        CREATE TABLE IF NOT EXISTS language_progress (
+    user_id INTEGER NOT NULL,
+    language TEXT NOT NULL,
+    highest_unlocked INTEGER NOT NULL DEFAULT 1,
+    PRIMARY KEY (user_id, language),
+    FOREIGN KEY(user_id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS level_completions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    language TEXT NOT NULL,
+    level INTEGER NOT NULL,
+    score INTEGER NOT NULL,
+    total_questions INTEGER NOT NULL,
+    percentage REAL NOT NULL,
+    coins_awarded INTEGER NOT NULL,
+    completed_at TEXT NOT NULL,
+    UNIQUE(user_id, language, level),
+    FOREIGN KEY(user_id) REFERENCES users(id)
+);
+""")
 
 
 init_db()
