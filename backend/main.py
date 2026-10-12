@@ -256,7 +256,7 @@ def make_token(user_id):
     }
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
-def get_user(authorization: str | None = Header(default=None)):
+def get_user(authorization: str | None = Header(default=None, alias="authorization")):
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(401, "Please log in.")
 
