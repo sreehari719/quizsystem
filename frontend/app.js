@@ -152,7 +152,7 @@ const maxLevel = 100;
 for (let i = 1; i <= maxLevel; i++) {
     const option = document.createElement("option");
     option.value = String(i);
-   option.textContent = `Level ${i} (5 questions)`;
+   option.textContent = `Level ${i} (${i * 5} questions)`;
     select.appendChild(option);
 }
 
