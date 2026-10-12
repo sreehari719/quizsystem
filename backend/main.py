@@ -404,6 +404,7 @@ def start_quiz(level: int = 1, user=Depends(get_user)):
 needed = level * 5
 questions = generate_ai_questions(level, needed)
  quiz_id = secrets.token_urlsafe(20)
+
  active_quizzes[quiz_id] = {
         "user_id": user["id"],
         "level": level,
