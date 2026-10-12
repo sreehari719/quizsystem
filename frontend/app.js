@@ -241,15 +241,27 @@ function renderQuestion() {
             return;
         }
 
-        if (index < total - 1) {
-            index++;
-            renderQuestion();
-        } else {
-            await finishQuiz();
+        try {
+            await request(`/api/quiz/${quiz.quiz_id}/answer`, {
+                method: "POST",
+                body: JSON.stringify({
+                    question_index: index,
+                    answer_index: answers[index]
+                })
+            });
+
+            if (index < total - 1) {
+                index++;
+                renderQuestion();
+            } else {
+                await finishQuiz();
+            }
+        } catch (error) {
+            el("quizMessage").textContent =
+                error.message || "Unable to submit your answer.";
         }
     });
 }
-
 
 
 
