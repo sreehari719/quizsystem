@@ -388,8 +388,9 @@ def leaderboard():
                 ),0) AS highest_level,
                 COALESCE(SUM(
                     CASE WHEN p.passed=1 THEN p.score ELSE 0 END
-                ),0) AS points
-            FROM users u
+                ),0) AS points,
+COUNT(CASE WHEN p.total > 0 THEN 1 END) AS completed_quizzes
+FROM users u
             LEFT JOIN progress p ON p.user_id=u.id
             GROUP BY u.id
             ORDER BY highest_level DESC, points DESC
@@ -400,10 +401,11 @@ def leaderboard():
         "leaderboard": [
             {
                 "rank": i + 1,
-                "username": row["username"],
-                "level": row["highest_level"],
-                "points": row["points"],
-                "title": get_rank(row["highest_level"])
+                 "username": row["username"],
+                 "level": row["highest_level"],
+                 "points": row["points"],
+                 "completed_quizzes": row["completed_quizzes"],
+                 "title": get_rank(row["highest_level"])
             }
             for i, row in enumerate(rows)
         ]
