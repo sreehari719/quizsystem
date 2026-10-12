@@ -412,7 +412,10 @@ def leaderboard():
 @app.post("/api/quiz/start")
 def start_quiz(level: int = 1, user=Depends(get_user)):
     if not 1 <= level <= 100:
-        raise HTTPException(400, "Level must be between 1 and 100.")
+        raise HTTPException(
+            status_code=400,
+            detail="Level must be between 1 and 100."
+        )
 
     with connect_db() as con:
         row = con.execute(
@@ -425,15 +428,16 @@ def start_quiz(level: int = 1, user=Depends(get_user)):
 
     if level > highest + 1:
         raise HTTPException(
-            403, f"Pass level {highest + 1} first."
+            status_code=403,
+            detail=f"Pass level {highest + 1} first."
         )
 
-  
-needed = level * 5
-questions = generate_ai_questions(level, needed)
- quiz_id = secrets.token_urlsafe(20)
+    needed = level * 5
+    questions = generate_ai_questions(level, needed)
 
- active_quizzes[quiz_id] = {
+    quiz_id = secrets.token_urlsafe(20)
+
+    active_quizzes[quiz_id] = {
         "user_id": user["id"],
         "level": level,
         "questions": questions,
@@ -445,11 +449,13 @@ questions = generate_ai_questions(level, needed)
         "level": level,
         "total": needed,
         "questions": [
-            {"question": q["question"], "options": q["options"]}
+            {
+                "question": q["question"],
+                "options": q["options"]
+            }
             for q in questions
         ]
     }
-
 @app.post("/api/quiz/{quiz_id}/answer")
 def answer(
     quiz_id: str,
