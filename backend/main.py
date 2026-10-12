@@ -17,6 +17,7 @@ app = FastAPI(title="QuizMaster API")
 def home():
     return {"message": "QuizMaster API is running"}
 
+
 def generate_ai_questions(level: int, count: int):
     api_key = os.getenv("OPENAI_API_KEY")
 
@@ -26,11 +27,30 @@ def generate_ai_questions(level: int, count: int):
             detail="AI mode is not configured. Add OPENAI_API_KEY in Render."
         )
 
-    client = OpenAI(api_key=api_key)
+    if not 1 <= level <= 100:
+        raise HTTPException(
+            status_code=400,
+            detail="Level must be between 1 and 100."
+        )
 
-    prompt = f"""
-Generate exactly {count} multiple-choice programming quiz questions
-for QuizMaster.
+    expected_count = level * 5
+    if count != expected_count:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Level {level} requires {expected_count} questions."
+        )
+
+    client = OpenAI(api_key=api_key)
+    all_questions = []
+    batch_size = 10
+
+    try:
+        for start in range(0, count, batch_size):
+            batch_count = min(batch_size, count - start)
+
+            prompt = f"""
+Generate exactly {batch_count} unique multiple-choice programming
+quiz questions for QuizMaster.
 
 Difficulty level: {level}
 Topics: C, C++, Python, programming fundamentals, data structures,
@@ -49,50 +69,58 @@ Return only a JSON object in this format:
 }}
 
 Rules:
+- Generate exactly {batch_count} questions.
 - Every question must have exactly four distinct options.
-- answer must be an integer from 0 to 3.
-- Questions should be appropriate for difficulty level {level}.
-- Generate exactly {count} questions.
+- The answer must be an integer from 0 to 3.
+- Questions must suit difficulty level {level}.
+- Avoid repeating questions within this batch.
 """
 
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You generate accurate programming quiz questions."
-                },
-                {"role": "user", "content": prompt}
-            ],
-            response_format={"type": "json_object"}
-        )
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "Generate accurate programming quiz questions."
+                    },
+                    {"role": "user", "content": prompt}
+                ],
+                response_format={"type": "json_object"}
+            )
 
-        data = json.loads(response.choices[0].message.content)
-        questions = data["questions"]
+            data = json.loads(response.choices[0].message.content)
+            questions = data.get("questions", [])
 
-        if len(questions) != count:
-            raise ValueError("Incorrect number of generated questions.")
+            if len(questions) != batch_count:
+                raise ValueError("Incorrect number of generated questions.")
 
-        for question in questions:
-            if (
-                not isinstance(question.get("question"), str)
-                or not isinstance(question.get("options"), list)
-                or len(question["options"]) != 4
-                or not isinstance(question.get("answer"), int)
-                or question["answer"] not in range(4)
-            ):
-                raise ValueError("Invalid question format.")
+            for question in questions:
+                if (
+                    not isinstance(question.get("question"), str)
+                    or not isinstance(question.get("options"), list)
+                    or len(question["options"]) != 4
+                    or len(set(question["options"])) != 4
+                    or not isinstance(question.get("answer"), int)
+                    or isinstance(question.get("answer"), bool)
+                    or question["answer"] not in range(4)
+                ):
+                    raise ValueError("Invalid question format.")
 
-            question.setdefault("explanation", "")
+                question.setdefault("explanation", "")
 
-        return questions
+            all_questions.extend(questions)
+
+        if len(all_questions) != count:
+            raise ValueError("Incorrect final question count.")
+
+        return all_questions
 
     except Exception as exc:
         raise HTTPException(
             status_code=502,
             detail="AI could not generate the quiz. Please try again."
         ) from exc
+
 
 
 SECRET_KEY = os.getenv(
