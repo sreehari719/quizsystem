@@ -115,12 +115,15 @@ Rules:
 
         return all_questions
 
-    except Exception as exc:
-        raise HTTPException(
-            status_code=502,
-            detail="AI could not generate the quiz. Please try again."
-        ) from exc
-
+   except Exception as exc:
+    print(
+        f"AI quiz generation error: {type(exc).__name__}: {exc}",
+        flush=True
+    )
+    raise HTTPException(
+        status_code=502,
+        detail="AI quiz generation failed. Check backend logs."
+    ) from exc
 
 
 SECRET_KEY = os.getenv(
